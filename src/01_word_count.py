@@ -19,9 +19,9 @@ def main():
 
     # 0. GİRDİ olarak kullanılacak dosyayı belirtiyoruz.
     # Dilerseniz yolu değiştirerek diğer girdi dosyalarını kullanabilirsiniz.
-    input_file_path = "/spark-demo/data/word_count/istiklal_marşı.txt"
-    #input_file_path = "/spark-demo/data/word_count/atasözleri.txt"
-    #input_file_path = "/spark-demo/data/word_count/yunus_emre.txt"
+    input_file_path = "/spark-demo/data/core/istiklal_marşı.txt"
+    #input_file_path = "/spark-demo/data/core/atasözleri.txt"
+    #input_file_path = "/spark-demo/data/core/yunus_emre.txt"
 
     # 1. EXTRACT: Veriyi Kaynaktan Okuma
     # Metin dosyasını bir DataFrame olarak okuyoruz.

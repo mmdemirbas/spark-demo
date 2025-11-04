@@ -28,20 +28,23 @@ tasarlanmıştır. Bu yüzden Python, Scala, Java, Spark gibi başka herhangi bi
 
 ```
 spark-starter-kit/
-├── data/                              # verilerin tutulduğu dizin
-│   ├── movielens/
-│   ├── word_count_input/
-│   └── streaming_input/
-├── scripts/                           # yardımcı betikler (script)
-│   └── generate_text_files.py
-├── src/                               # demo script'leri
-│   ├── 01_word_count.py
-│   ├── 02_lazy_evaluation.py
-│   ├── 03_narrow_vs_wide.py
-│   ├── 04a_mllib_classification.py
-│   ├── 04b_structured_streaming.py
-│   └── 05_movielens_etl.py
-├── docker-compose.yml                 # docker compose projesi
+├── conf/
+│   ├── spark-defaults.conf                   # Tüm düğümlerde ortak olan önemli Spark ayarları
+├── data/
+│   ├── core/                                  # Demo 1 için girdiler
+│   ├── mllib/                                 # Demo 4a ve 4b için girdiler
+│   └── streaming/                             # Demo 5 için girdiler
+├── src/
+│   ├── 01_word_count.py                       # Demo 1: Word count
+│   ├── 02_lazy_evaluation.py                  # Demo 2: Lazy evaluation
+│   ├── 03_narrow_vs_wide.py                   # Demo 3: Narrow-wide transformations
+│   ├── 04a_mllib_manual.py                    # Demo 4a: MLlib ile machine learning classification (manual)
+│   ├── 04b_mllib_pipeline.py                  # Demo 4b: MLlib ile machine learning classification (pipeline)
+│   ├── 05_structured_streaming.py             # Demo 5: Structured streaming demosu
+│   ├── 05_structured_streaming_generator.py   # Demo 5 için girdi üreten script
+│   └── 06_movielens_etl.py
+├── docker-compose.yml                         # docker compose proje dosyası
+├── Dockerfile                                 # temel docker image'ını tanımlayan Dockerfile
 └── README.md
 ```
 
@@ -61,6 +64,13 @@ spark-starter-kit/
    docker compose exec -it master /bin/bash
    ```
 
+   Kısaca:
+   ```bash
+   docker compose down --remove-orphans &&
+      docker compose -up -d &&
+      docker compose exec master /bin/bash
+   ```
+
 4. Master node içinde istediğiniz demo betiğini (script) çalıştırın:
 
    ```bash
@@ -73,9 +83,9 @@ spark-starter-kit/
    /opt/spark/bin/spark-submit /spark-demo/src/04a_mllib_manual.py
    /opt/spark/bin/spark-submit /spark-demo/src/04b_mllib_pipeline.py
 
-   # Streaming
-   python3                     /spark-demo/scripts/generate_text_files.py /spark-demo/data/streaming
-   /opt/spark/bin/spark-submit /spark-demo/src/05_structured_streaming.py /spark-demo/data/streaming
+   # Streaming (generator script ayrı bir terminalde çalıştırılıp sürekli veri üretmesi sağlanmalı)
+   python3                     /spark-demo/src/05_structured_streaming_generator.py
+   /opt/spark/bin/spark-submit /spark-demo/src/05_structured_streaming.py
 
    # Birleşik
    /opt/spark/bin/spark-submit /spark-demo/src/06_movielens_etl.py
