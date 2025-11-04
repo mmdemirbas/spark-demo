@@ -52,6 +52,9 @@ def main():
     )
     print("🔧 Dönüşüm 3 tanımlandı: Yeni sütun ekleme (withColumn)")
 
+    print("\n🧠 Mantıksal/Fiziksel Plan (explain):")
+    df_final.explain(extended=False)  # veya True
+
     # --- KRİTİK NOKTA ---
     # Şu ana kadar sadece bir dizi dönüşüm tanımladık. Spark, bu adımlardan oluşan bir
     # "mantıksal plan" veya DAG (Directed Acyclic Graph) oluşturdu, ancak henüz
@@ -74,6 +77,9 @@ def main():
     print("🚀 Gözlemle  : 'Completed Jobs' bölümünde tamamlanan işimiz listelendi")
     print("🚀 Neden     : .show() eylemini çağırdık")
     df_final.show()
+
+    print("\n🧠 Mantıksal/Fiziksel Plan (explain):")
+    df_final.explain(extended=False)  # veya True
 
     wait(
         WAIT_BEFORE_STOP_SECONDS,
