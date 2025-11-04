@@ -1,0 +1,102 @@
+# Bu docker-compose projesi, Apache Spark'ı tanıma amaçlı basit bir küme (cluster) ayağa kaldırır.
+# Kümede bulunan düğümler (node): master, 2 adet worker, history server.
+name: spark-demo
+
+services:
+
+  # Master node: Spark'ın cluster manager'ı çalıştırdığı diğer düğümlerle işbirliğini yöneten koordinator düğüm
+  master:
+    # Spark açık-kaynak topluluğu tarafından bakımı yapılan resmi image
+    image: apache/spark:3.5.7
+    container_name: master
+    hostname: spark-master # worker'ların master'e bulabilmesi için hostname
+    depends_on:
+      - spark-events-init # Başlamadan spark-events dizinine erişim yetkilerini ayarla
+    volumes:
+      # Proje dizini - container içinden rahat erişim için
+      - ./:/spark-demo/
+      # Spark varsayılan ayar dosyası. Ortak ayarları derli toplu tutmak için kullanışlı.
+      # Komut satırı seçenekleri veya ortam değişkeni ile override edilebilir.
+      - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      # Görev geçmişini saklamak için History Server ile paylaşılan dizin
+      - spark-events:/opt/spark-events/
+    ports:
+      - "7077:7077" # Spark Master RPC port - Worker'ların bağlanıp master ile iletişim kuracağı port
+      - "8080:8080" # Spark Master Web UI - Bu düğüme ait Spark web arayüzünü görüntülemek için
+      - "4040:4040" # Application UI (Jobs/Stages/SQL) - Bir görev çalışmaktayken erişilebilen "Spark UI" arayüzü
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+
+  # Spark'ın bir executor çalıştırarak iş yükünü dağıtacağı bir düğüm (worker node)
+  worker-1:
+    image: apache/spark:3.5.7
+    container_name: worker-1
+    depends_on:
+      - master
+    volumes:
+      - ./:/spark-demo/
+      - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      - spark-events:/opt/spark-events/
+    ports:
+      - "8081:8081"   # Worker Web UI - Bu düğüme ait Spark web arayüzünü görüntülemek için
+    environment:
+      SPARK_WORKER_WEBUI_PORT: 8081
+      # Spark web arayüzündeki linklerde docker'ın iç IP'lerini değil localhost'u kullan.
+      # Docker-içi IP'ler kullanılırsa web tarayıcı üzerinden bu adreslere erişilemez.
+      SPARK_PUBLIC_DNS: localhost
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+
+  # Başka bir worker node daha..
+  worker-2:
+    image: apache/spark:3.5.7
+    container_name: worker-2
+    depends_on:
+      - master
+    volumes:
+      - ./:/spark-demo/
+      - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      - spark-events:/opt/spark-events/
+    ports:
+      - "8082:8082"
+    environment:
+      SPARK_WORKER_WEBUI_PORT: 8082
+      SPARK_PUBLIC_DNS: localhost
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+
+  # Spark History Server: Spark iş geçmişini görüntülemek için kullanılan bir hizmet
+  history-server:
+    image: apache/spark:3.5.7
+    container_name: spark-history-server
+    depends_on:
+      - master
+    volumes:
+      - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      # Diğer düğümlerden history event verisinin yazıldığı paylaşılan dizin
+      - spark-events:/opt/spark-events/
+    ports:
+      - "18080:18080"
+    environment:
+      SPARK_NO_DAEMONIZE: true
+      SPARK_HISTORY_OPTS: >-
+        -Dspark.history.fs.logDirectory=file:///opt/spark-events
+        -Dspark.history.fs.update.interval=5s
+        -Dspark.history.retainedApplications=200
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
+
+  # Spark History Server için paylaşılan spark-events dizinine erişim yetkilerini ayarlayıp kapanan yardımcı hizmet
+  spark-events-init:
+    image: apache/spark:3.5.7
+    volumes:
+      - spark-events:/opt/spark-events
+    # Yetkileri ayarlayabilmek için "root" kullanıcısı ile çalıştır (öntanımlı "spark" kullanıcısıdır)
+    user: "0:0"
+    # Dizin sahipliğini ve yazma yetkilerini yukarıdaki diğer hizmetlerin erişebileceği şekilde ayarla
+    command: bash -lc "chown -R spark:spark /opt/spark-events && chmod 775 /opt/spark-events"
+
+volumes:
+  # Spark History Server için paylaşılan spark-events dizini
+  spark-events:
+    name: spark-events
