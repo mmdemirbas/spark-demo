@@ -6,7 +6,7 @@ import time
 WAIT_BEFORE_RUN_SECONDS = 60
 
 # Job tamamlandıktan sonra Spark UI'yı incelemek için bekleme süresi
-WAIT_AFTER_RUN_SECONDS = 120
+WAIT_BEFORE_STOP_SECONDS = 120
 
 
 def main():
@@ -56,23 +56,27 @@ def main():
     # "mantıksal plan" veya DAG (Directed Acyclic Graph) oluşturdu, ancak henüz
     # küme üzerinde hiçbir iş (job) başlatmadı.
     # Şimdi programı duraklatıp Spark UI'ı kontrol edeceğiz.
-    print("\n💤 GECİKMELİ ÇALIŞTIRMA (LAZY EVALUATION) NOKTASI")
-    print("💤 Adrese gidin: http://localhost:4040/jobs")
-    print("💤 Spark UI'da 'Jobs' sekmesinin TAMAMEN BOŞ olduğunu göreceksiniz.")
-    print("💤 Çünkü henüz .show(), .count(), .collect() gibi bir 'Eylem' çağırmadık.")
+    print()
+    print("💤 GECİKMELİ ÇALIŞTIRMA (LAZY EVALUATION) NOKTASI")
+    print("💤 Adrese git: http://localhost:4040/jobs")
+    print("💤 Gözlemle  : Spark UI'da 'Jobs' sekmesi TAMAMEN BOŞ")
+    print("💤 Neden     : Henüz .show(), .count(), .collect() gibi bir 'Eylem' çağırmadık")
+
     wait(WAIT_BEFORE_RUN_SECONDS, "show() eylemi (action) çağrılacak...")
 
     # 4. EYLEM: Sonucu Gösterme (show)
     # .show() bir eylemdir. Bu komut, Spark'a şimdiye kadar tanımlanan tüm
     # dönüşümleri optimize edip küme üzerinde çalıştırmasını söyler.
-    print("🚀 EYLEM ÇAĞRILDI:.show()")
-    print("🚀 Adrese gidin: http://localhost:4040/jobs")
-    print("🚀 'Completed Jobs' bölümünde tamamlanan işin listelendiği göreceksiniz.")
+    print()
+    print("🚀 EYLEM ÇAĞRILDI: show()")
+    print("🚀 Adrese git: http://localhost:4040/jobs")
+    print("🚀 Gözlemle  : 'Completed Jobs' bölümünde tamamlanan işimiz listelendi")
+    print("🚀 Neden     : .show() eylemini çağırdık")
     df_final.show()
 
     wait(
-        WAIT_AFTER_RUN_SECONDS,
-        "Spark kümesi (cluster) durdurulacak ve Spark UI'a erişilemeyecek...",
+        WAIT_BEFORE_STOP_SECONDS,
+        "Spark kümesi (cluster) durdurulacak ve Spark UI'a erişilemeyecek. History Server (localhost:18080) üzerinden erişmeye devam edebilirsiniz.",
     )
     spark.stop()
 
@@ -83,12 +87,13 @@ def wait(seconds: int, message: str = "") -> None:
 
     for remaining in range(seconds, 0, -1):
         print(
-            f"\r⏳ {remaining:2d} saniye içinde: {message}",
+            f"\r⏳ {remaining:2d} saniye içinde: {message}                 ",
             end="",
             flush=True,
         )
         time.sleep(1)
 
+    print() # Sonraki satıra düzgün geçtiğimizden emin olmak için bir boş satır bırak
 
 if __name__ == "__main__":
     main()
