@@ -20,6 +20,7 @@ def main():
     spark = SparkSession.builder.appName("NarrowVsWideTransformations").getOrCreate()
     sc = spark.sparkContext
     sc.setLogLevel("WARN")
+    print("✅ Spark oturumu başladı")
 
     # Basit bir RDD oluşturalım.
     data_rdd = sc.parallelize(range(0, 1000), 4)  # 4 bölüm (partition)
@@ -95,6 +96,7 @@ def main():
         "Spark kümesi (cluster) durdurulacak ve Spark UI'a erişilemeyecek. History Server (localhost:18080) üzerinden erişmeye devam edebilirsiniz.",
     )
     spark.stop()
+    print("🏁 Spark oturumu durduruldu.")
 
 
 def wait(seconds: int, message: str = "") -> None:

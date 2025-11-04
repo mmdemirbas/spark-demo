@@ -12,16 +12,16 @@ def main():
     # SparkSession, Spark ile etkileşim kurmak için giriş noktasıdır.
     # .appName() ile uygulamamızın ismini veriyoruz (sadece Spark UI'da kolay ayırt edebilmek için)
     spark = SparkSession.builder.appName("WordCount").getOrCreate()
-    print("✅ SparkSession başarıyla oluşturuldu.")
 
     # Çıktıda gereksiz kalabalık etmemesi için INFO loglarını kapatalım
     spark.sparkContext.setLogLevel("WARN")
+    print("✅ Spark oturumu başladı")
 
-    # GİRDİ olarak kullanılacak dosyayı belirtiyoruz.
+    # 0. GİRDİ olarak kullanılacak dosyayı belirtiyoruz.
     # Dilerseniz yolu değiştirerek diğer girdi dosyalarını kullanabilirsiniz.
-    input_file_path = "/spark-demo/data/word_count_input/istiklal_marşı.txt"
-    #input_file_path = "/spark-demo/data/word_count_input/atasözleri.txt"
-    #input_file_path = "/spark-demo/data/word_count_input/yunus_emre.txt"
+    input_file_path = "/spark-demo/data/word_count/istiklal_marşı.txt"
+    #input_file_path = "/spark-demo/data/word_count/atasözleri.txt"
+    #input_file_path = "/spark-demo/data/word_count/yunus_emre.txt"
 
     # 1. EXTRACT: Veriyi Kaynaktan Okuma
     # Metin dosyasını bir DataFrame olarak okuyoruz.
@@ -86,7 +86,7 @@ def main():
 
     # SparkSession'ı durdurmak, kümedeki kaynakları serbest bırakır.
     spark.stop()
-    print("✅ SparkSession durduruldu.")
+    print("🏁 Spark oturumu durduruldu.")
 
 
 if __name__ == "__main__":

@@ -50,31 +50,68 @@ spark-starter-kit/
 1. Bir terminal açıp proje dizinine gidin (`cd`).
 
 2. Servisleri başlatın:
-    ```bash
-    docker compose -up -d
-    ```
+
+   ```bash
+   docker compose -up -d
+   ```
 
 3. Master node'a bağlanın:
-    ```bash
-    docker compose exec -it master /bin/bash
-    ```
+
+   ```bash
+   docker compose exec -it master /bin/bash
+   ```
 
 4. Master node içinde istediğiniz demo betiğini (script) çalıştırın:
-    ```bash
-    /opt/spark/bin/spark-submit /spark-demo/src/01_word_count.py
-    /opt/spark/bin/spark-submit /spark-demo/src/02_lazy_evaluation.py
-    /opt/spark/bin/spark-submit /spark-demo/src/03_narrow_vs_wide.py
-    /opt/spark/bin/spark-submit /spark-demo/src/04a_mllib_classification.py
-    /opt/spark/bin/spark-submit /spark-demo/src/04b_structured_streaming.py
-    /opt/spark/bin/spark-submit /spark-demo/src/05_movielens_etl.py
-    ```
-   Her betik ile ilgili ek açıklamaları kendi dosyası içinde yorum satırı olarak bulabilirsiniz.
+
+   ```bash
+   # Batch (Spark Core & Spark SQL)
+   /opt/spark/bin/spark-submit /spark-demo/src/01_word_count.py
+   /opt/spark/bin/spark-submit /spark-demo/src/02_lazy_evaluation.py
+   /opt/spark/bin/spark-submit /spark-demo/src/03_narrow_vs_wide.py
+
+   # MLlib
+   /opt/spark/bin/spark-submit /spark-demo/src/04a_mllib_manual.py
+   /opt/spark/bin/spark-submit /spark-demo/src/04b_mllib_pipeline.py
+
+   # Streaming
+   python3                     /spark-demo/scripts/generate_text_files.py /spark-demo/data/streaming
+   /opt/spark/bin/spark-submit /spark-demo/src/05_structured_streaming.py /spark-demo/data/streaming
+
+   # Birleşik
+   /opt/spark/bin/spark-submit /spark-demo/src/06_movielens_etl.py
+
+   ```
+
+   Her betik ile ilgili detaylı açıklamaları kendi dosyası içinde yorum satırı olarak bulabilirsiniz.
 
 5. Spark arayüzünü inceleyin:
-    - Spark Master UI: `http://localhost:8080`
-    - Spark History UI: `http://localhost:18080`
+    - Spark History UI: `http://localhost:18080` (bitmiş ve devam eden tüm işler)
+    - Spark UI: `http://localhost:4040` (sadece iş devam ederken erişilebilir)
+    - Node'lar:
+        - Spark Master: `http://localhost:8080`
+        - Spark Worker: `http://localhost:8081`
+        - Spark Worker: `http://localhost:8082`
 
 6. Servisleri durdurabilirsiniz (proje dizininde çalıştırın):
-    ```bash
-    docker compose down
-    ```
+   ```bash
+   docker compose down --remove-orphans
+   ```
+
+## 5. Güncelleme
+
+Daha yeni bir Spark versiyonuna geçmek isterseniz Dockerfile'daki versiyonu güncellemelisiniz.
+
+Uyumlu Python paket versiyonlarını bulmak ve sabitlemek için şu yöntemi kullanabilirsiniz:
+
+```bash
+# Geçici bir container başlat (kendi Spark versiyonunu kullan)
+docker run --rm -it --user root apache/spark:3.5.7 /bin/bash
+
+# Bir seferlik Python paketlerini indirip versiyonları gör
+apt-get update && apt-get install -y python3-pip
+mkdir /tmp/deps && cd /tmp/deps
+pip download "pyspark[ml,sql]==3.5.7"
+ls -1
+
+# Dockerfile'ı doğru versiyonları yazarak güncelle ve versiyonları sabitle
+```

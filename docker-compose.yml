@@ -6,8 +6,10 @@ services:
 
   # Master node: Spark'ın cluster manager'ı çalıştırdığı diğer düğümlerle işbirliğini yöneten koordinator düğüm
   master:
-    # Spark açık-kaynak topluluğu tarafından bakımı yapılan resmi image
-    image: apache/spark:3.5.7
+
+    # Aynı dizindeki Dockerfile'dan bir docker image'ı oluşturup kullan.
+    # MLlib kullanılmayacaksa "build: ." yerine doğrudan "image: apache/spark:3.5.7" kullanılabilir.
+    build: .
     container_name: master
     hostname: spark-master # worker'ların master'e bulabilmesi için hostname
     depends_on:
@@ -28,7 +30,7 @@ services:
 
   # Spark'ın bir executor çalıştırarak iş yükünü dağıtacağı bir düğüm (worker node)
   worker-1:
-    image: apache/spark:3.5.7
+    build: .
     container_name: worker-1
     depends_on:
       - master
@@ -49,7 +51,7 @@ services:
 
   # Başka bir worker node daha..
   worker-2:
-    image: apache/spark:3.5.7
+    build: .
     container_name: worker-2
     depends_on:
       - master
@@ -68,7 +70,7 @@ services:
 
   # Spark History Server: Spark iş geçmişini görüntülemek için kullanılan bir hizmet
   history-server:
-    image: apache/spark:3.5.7
+    build: .
     container_name: spark-history-server
     depends_on:
       - master
@@ -88,7 +90,7 @@ services:
 
   # Spark History Server için paylaşılan spark-events dizinine erişim yetkilerini ayarlayıp kapanan yardımcı hizmet
   spark-events-init:
-    image: apache/spark:3.5.7
+    build: .
     volumes:
       - spark-events:/opt/spark-events
     # Yetkileri ayarlayabilmek için "root" kullanıcısı ile çalıştır (öntanımlı "spark" kullanıcısıdır)

@@ -18,6 +18,7 @@ def main():
     """
     spark = SparkSession.builder.appName("LazyEvaluationDemo").getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
+    print("✅ Spark oturumu başladı")
 
     # Bir DataFrame oluşturuyoruz. Bu işlem hızlıdır çünkü henüz veri işlenmiyor.
     data = [
@@ -79,6 +80,7 @@ def main():
         "Spark kümesi (cluster) durdurulacak ve Spark UI'a erişilemeyecek. History Server (localhost:18080) üzerinden erişmeye devam edebilirsiniz.",
     )
     spark.stop()
+    print("🏁 Spark oturumu durduruldu.")
 
 
 def wait(seconds: int, message: str = "") -> None:
